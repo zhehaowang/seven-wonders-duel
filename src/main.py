@@ -13,21 +13,61 @@ BuildingAge = Enum('BuildingAge', 'One Two Three NoAge')
 
 BuildingOwner = Enum('BuildingOwner', 'P1 P2 NoOne')
 
+ScienceSymbol = Enum('ScienceSymbol', 'Wheel Writing Geometry Medicine Laws Compass Construction')
+
 class Player:
     def __init__(self) -> None:
         pass
 
 class Building:
-    def __init__(self, age: BuildingAge, type: BuildingType, effects: dict) -> None:
+    def __init__(self, age: BuildingAge, type: BuildingType, costs: list, effects: dict) -> None:
         self.state = BuildingState.FaceUp
         self.owner = BuildingOwner.NoOne
         self.age = age
         self.type = type
         self.effects = effects
+        self.covered_by = []
+        self.costs = costs
+        return
+
+    def can_build(self, inventory):
+        return min([cost(inventory) for cost in self.costs])
+
+    def build(self, player: BuildingOwner):
+        self.owner = player
+        return
+
+class Player:
+    def __init__(self, player) -> None:
+        self.player = player
+        self.inventory = {
+            "building": [],
+            "dev_token": [],
+            "god_token": [],
+            "prayer_token": [],
+            "science_token": [],
+            "gold": 7,
+            "points": 0,
+            "war": 0,
+        }
+        return
+
+class DevToken:
+    def __init__(self, effects: list) -> None:
+        self.effects = effects
+        self.owner = BuildingOwner.NoOne
         return
 
 Buildings = {
+    # red
+    # yellow
+    # green
+    # brown
     "lumber_camp": Building(age=BuildingAge.One, type=BuildingType.Brown, effects={"produce": [[Resource.Wood]]}),
+    # gray
+    # blue
+    # guild
+    # temple
     # wonders
     "appian_way": Building(age=BuildingAge.NoAge, type=BuildingType.Wonder, effects={"points": 3, "gold": 3, "opponent_gold": -3}),
     "circus_maximus": Building(age=BuildingAge.NoAge, type=BuildingType.Wonder, effects={"war": 1, "points": 3, "opponent_discard": BuildingType.Gray}),
@@ -41,6 +81,13 @@ Buildings = {
     "the_sphinx": Building(age=BuildingAge.NoAge, type=BuildingType.Wonder, effects={"points": 6, "carry": True}),
     "the_statue_of_zeus": Building(age=BuildingAge.NoAge, type=BuildingType.Wonder, effects={"war": 1, "points": 3, "opponent_discard": BuildingType.Brown}),
     "the_temple_of_artemis": Building(age=BuildingAge.NoAge, type=BuildingType.Wonder, effects={"gold": 12, "carry": True}),
+}
+
+DevToken = {
+    "agriculture": DevToken(effects={"points": 4, "gold": 6}),
+    # their spending goes to you
+    "economy": DevToken(effects={}),
+    "law": DevToken(effects={"science": ScienceSymbol.Laws}),
 }
 
 def main():
