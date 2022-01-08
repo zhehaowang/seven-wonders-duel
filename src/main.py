@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 import sys
 
@@ -22,14 +24,24 @@ ScienceSymbol = Enum(
 )
 
 
-class Player:
+class Game:
     def __init__(self) -> None:
-        pass
+        self.total_wonders = 0
+        return
 
+def get_total_coins(player, cost):
+    total = 0
+    for key in cost:
+        if key == "coin":
+            total += cost[key]
+        elif type(key) == Resource:
+            # todo: correct
+            short = cost[key] - player.inventory[key]
+    return total
 
 class Building:
     def __init__(
-        self, age: BuildingAge, type: BuildingType, costs: list, effects: dict
+        self, age: BuildingAge, type: BuildingType, effects: dict, costs: list = []
     ) -> None:
         self.state = BuildingState.FaceUp
         self.owner = BuildingOwner.NoOne
@@ -40,28 +52,58 @@ class Building:
         self.costs = costs
         return
 
-    def can_build(self, inventory):
+    def get_actions(self, player):
+        actions = ["discard"]
+        # if any of the costs are met, we can build
+        for cost in self.costs:
+            for item in cost:
+                pass
         return min([cost(inventory) for cost in self.costs])
 
-    def build(self, player: BuildingOwner):
-        self.owner = player
-        return
+    # def build(self, player: BuildingOwner):
+    #     self.owner = player
+    #     return
 
 
 class Player:
-    def __init__(self, player) -> None:
-        self.player = player
+    def __init__(self, player_number : BuildingOwner) -> None:
+        assert player_number != BuildingOwner.NoOne
+        self.player = player_number
         self.inventory = {
             "building": [],
             "dev_token": [],
             "god_token": [],
             "prayer_token": [],
             "science_token": [],
+            "wonders": [],
             "coin": 7,
             "points": 0,
             "war": 0,
+            Resource.Wood: 0,
+            Resource.Stone: 0,
+            Resource.Brick: 0,
+            Resource.Glass: 0,
+            Resource.Paper: 0,
         }
         return
+
+    def get_unbuilt_wonders(self) -> list:
+        return self.inventory["wonders"]
+
+    def build_wonder(self, wonder: str) -> None:
+        assert wonder in Buildings
+        bld = Buildings[wonder]
+        assert bld.type == BuildingType.Wonder and bld.owner == BuildingOwner.NoOne
+        bld.owner = self.player
+
+    def get_buildings_of_type(self, btype: BuildingType) -> list:
+        return [b for b in self.inventory["building"] if b.type == btype]
+
+    def get_discard_gold(self) -> int:
+        return 2 + self.get_buildings_of_type(BuildingType.Yellow)
+
+    def other_player(self) -> BuildingOwner:
+        return BuildingOwner.P2 if self.player == BuildingOwner.P1 else BuildingOwner.P1
 
 
 class DevToken:
@@ -79,7 +121,7 @@ Buildings = {
         effects=[{"war": 1}],
     ),
     # red - age 2
-    "guard_tower": Building(
+    "walls": Building(
         age=BuildingAge.Two,
         type=BuildingType.Red,
         costs=[{Resource.Stone: 2}],
@@ -278,7 +320,7 @@ DevToken = {
     "economy": DevToken(effects={}),
     "law": DevToken(effects={"science": ScienceSymbol.Laws}),
     "philosophy": DevToken(effects={"points": 7}),
-    "strategy": DevToken(),
+    "strategy": DevToken(effects={}),
     # modifiers for building cost, coin gained, war, carry, points,
 }
 
