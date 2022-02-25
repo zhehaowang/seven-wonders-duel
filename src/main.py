@@ -36,7 +36,8 @@ def get_total_coins(player, cost):
             total += cost[key]
         elif type(key) == Resource:
             # todo: correct
-            short = cost[key] - player.inventory[key]
+            # short = cost[key] - player.inventory[key]
+            pass
     return total
 
 class Building:
@@ -79,11 +80,6 @@ class Player:
             "coin": 7,
             "points": 0,
             "war": 0,
-            Resource.Wood: 0,
-            Resource.Stone: 0,
-            Resource.Brick: 0,
-            Resource.Glass: 0,
-            Resource.Paper: 0,
         }
         return
 
